@@ -1,8 +1,10 @@
 class proceso:
     #Atributos    
     nombre: str
-    estado: str
-    tamano:int        
+    estado: bool
+    tamano:int  
+
+    #Check: dado que esto debe de ser tiempos manejados en min, seg, y/o fracciones de seg, cambiar el tipo de dato      
     tiempo_llegada: int
     tiempo_finalizacion: int
     tiempo_atencion: int
