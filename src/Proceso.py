@@ -1,3 +1,5 @@
+from datetime import date
+import time as tm
 class proceso:
     #Atributos    
     nombre: str
@@ -5,10 +7,11 @@ class proceso:
     tamano:int  
 
     #Check: dado que esto debe de ser tiempos manejados en min, seg, y/o fracciones de seg, cambiar el tipo de dato      
-    tiempo_llegada: int
-    tiempo_finalizacion: int
-    tiempo_atencion: int
-    tiempo_espera: int
+    tiempo_llegada: date
+    tiempo_finalizacion: date
+    tiempo_atencion: date
+    tiempo_espera: date
+
     
     def __init__(self, nombre, estado, tamano, prioridad, tiempo_ejecucion, tiempo_llegada, tiempo_finalizacion, tiempo_espera, tiempo_atencion):
         self.nombre = nombre
