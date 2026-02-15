@@ -6,11 +6,11 @@ class proceso:
     estado: bool
     tamano:int  
 
-    #Check: dado que esto debe de ser tiempos manejados en min, seg, y/o fracciones de seg, cambiar el tipo de dato      
-    tiempo_llegada: date
-    tiempo_finalizacion: date
-    tiempo_atencion: date
-    tiempo_espera: date
+    # TODO: Revisar que el tipo de dato date sea correcto, y si es necesario importar alguna libreria para manejar fechas
+    tiempo_llegada: None
+    tiempo_finalizacion: None
+    tiempo_atencion: None
+    tiempo_espera: None
 
     
     def __init__(self, nombre, estado, tamano, prioridad, tiempo_ejecucion, tiempo_llegada, tiempo_finalizacion, tiempo_espera, tiempo_atencion):

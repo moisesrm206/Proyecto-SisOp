@@ -1,5 +1,6 @@
 
 import customtkinter as ctk
+from tkinter.ttk import Treeview as TreeVw
 import time as tm
 import sys
 import os
@@ -42,7 +43,6 @@ app = ctk.CTk()
 app.title("Simulador de gestion de memoria")
 app.geometry("1000x700")
 
-
 BtnCrear = ctk.CTkButton(app, text="Llegada", command=CrearProceso)
 BtnCrear.grid(row=0, column=0, padx=20, pady=20)
 
@@ -56,8 +56,26 @@ Estado_Memoria = ctk.CTkFrame(
     border_width=2,
     border_color="black",
     fg_color="transparent",  # Sin relleno
+    corner_radius=20,
 )
-Estado_Memoria.place(x=50, y=50)
+Estado_Memoria.place(x=50, y=70)
+
+
+tabla = TreeVw(app, columns=(1,2,3,4,5,6,7), show="headings", height = 8)
+tabla.heading(1, text="Nombre")
+tabla.heading(2, text="Estado")
+tabla.heading(3, text="Tamaño")
+tabla.heading(4, text="Llegada")
+tabla.heading(5, text="Finalización")
+tabla.heading(6, text="Tiempo de atención")
+tabla.heading(7, text="Tiempo de espera")
+
+''' #TODO: Agregar un loop para mostrar los procesos en la tabla, y actualizar la tabla cada vez que se cree o borre un proceso
+    tambien cambiar la forma en la que se muestra la tabla para que no se vaya mas alla del borde del frame de estado de memoria,
+    y agregar un scroll para la tabla en caso de que se agreguen muchos procesos.
+'''
+
+tabla.grid(padx = 150, pady = 80, column=1)
 
 app.mainloop()
 
