@@ -55,17 +55,17 @@ BtnBorrar.grid(row=0, column=1, padx=20, pady=20)
 
 Estado_Memoria = ctk.CTkFrame(
     app,
-    width=100,
-    height=450,
-    border_width=2,
+    width=120,
+    height=550,
+    border_width=1,
     border_color="black",
-    fg_color="transparent",  # Sin relleno
-    corner_radius=20,
+    fg_color="#c3d4e7",
+    corner_radius=15,
 )
 Estado_Memoria.place(x=50, y=70)
 
 
-tabla = TreeVw(app, columns=(1,2,3,4,5,6,7), show="headings", height = 8)
+tabla = TreeVw(app, columns=(1,2,3,4,5,6,7), show="headings", height = 12)
 tabla.heading(1, text="Nombre")
 tabla.heading(2, text="Estado")
 tabla.heading(3, text="Tamaño")
@@ -76,10 +76,10 @@ tabla.heading(7, text="Tiempo de espera")
 
 tabla.column(1, width=60)
 tabla.column(2, width=50)
-tabla.column(3, width=50)
-tabla.column(4, width=60)
-tabla.column(5, width=80)
-tabla.column(6, width=110)
+tabla.column(3, width=60)
+tabla.column(4, width=120)
+tabla.column(5, width=120)
+tabla.column(6, width=120)
 tabla.column(7, width=120)
 
 # ? INFO: El scrollbar horizontal no funciona, no se muestran barras para mover, pero si funciona el vertical,
@@ -96,7 +96,7 @@ def actualizar_tabla():
         tabla.insert("", "end", values=(proceso.nombre, proceso.estado, proceso.tamano, proceso.tiempo_llegada, proceso.tiempo_finalizacion, proceso.tiempo_atencion, proceso.tiempo_espera))
 
 
-tabla.grid(padx = 150, pady = 80, column=1)
+tabla.grid(padx = 150, pady = 80, row=1, column=1)
 
 
 app.mainloop()
