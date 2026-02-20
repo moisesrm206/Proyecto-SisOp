@@ -1,12 +1,17 @@
+from datetime import date
+import time as tm
 class proceso:
     #Atributos    
     nombre: str
-    estado: str
-    tamano:int        
-    tiempo_llegada: int
-    tiempo_finalizacion: int
-    tiempo_atencion: int
-    tiempo_espera: int
+    estado: bool
+    tamano:int  
+
+    # TODO: Revisar que el tipo de dato date sea correcto, y si es necesario importar alguna libreria para manejar fechas
+    tiempo_llegada: None
+    tiempo_finalizacion: None
+    tiempo_atencion: None
+    tiempo_espera: None
+
     
     def __init__(self, nombre, estado, tamano, prioridad, tiempo_ejecucion, tiempo_llegada, tiempo_finalizacion, tiempo_espera, tiempo_atencion):
         self.nombre = nombre
