@@ -1,3 +1,4 @@
+from datetime import datetime
 import customtkinter as ctk
 import tkinter as tk   # Canvas de Tkinter normal
 from tkinter.ttk import Treeview as TreeVw
@@ -37,10 +38,10 @@ def CrearProceso():
     PrcssTamDialog = ctk.CTkInputDialog(title="Crear Proceso", text="Ingrese el tamaño del proceso:")
     tamProceso = int(PrcssTamDialog.get_input())
     
-    tiempo_llegada = tm.strftime("%H:%M:%S", tm.localtime())
+    tiempo_llegada = datetime.now()
     print(tiempo_llegada)
 
-    proceso = prcs(nombrePrcs, True, tamProceso, 0, 0, tiempo_llegada, 0, 0, 0)
+    proceso = prcs(nombrePrcs, True, tamProceso, 0, 0, tiempo_llegada, None, None, None)
 
     if not insertar_proceso(proceso):
         # No hay hueco suficiente, el proceso entra en espera
@@ -64,8 +65,7 @@ def insertar_proceso(proceso):
     combinar_huecos()
     for i, seg in enumerate(segmentos):
         if seg["proceso"] is None and seg["tamano"] >= proceso.tamano:
-            proceso.estado = True
-            proceso.tiempo_atencion = tm.strftime("%H:%M:%S", tm.localtime())
+            proceso.estado = True            
 
             # calcular tiempo de espera si aplica
             espera_inicio = tiempos_espera_inicio.get(proceso.nombre)
@@ -87,6 +87,14 @@ def BorrarProceso():
     BorrarDialog = ctk.CTkInputDialog(title="Salir Proceso", text="Ingrese el nombre del proceso:")
     nombrePrcs = BorrarDialog.get_input()
 
+    for proceso in procesos:
+        if proceso.nombre == nombrePrcs and proceso.estado:            
+            proceso.tiempo_finalizacion = datetime.now()
+            proceso.tiempo_atencion = proceso.tiempo_finalizacion - proceso.tiempo_llegada
+            
+        else:
+            print("Proceso no encontrado o no activo")
+
     encontrado = eliminar_proceso(nombrePrcs)
 
     if not encontrado:
@@ -101,8 +109,7 @@ def eliminar_proceso(nombre):
     for i, seg in enumerate(segmentos):
         if seg["proceso"] and seg["proceso"].nombre == nombre and seg["proceso"].estado:
             seg["proceso"].estado = False
-            seg["proceso"].tiempo_finalizacion = tm.strftime("%H:%M:%S", tm.localtime())
-            # convertir en hueco
+            # ↓ quita la línea de tiempo_finalizacion, ya se asignó en BorrarProceso
             segmentos[i] = {"proceso": None, "tamano": seg["tamano"]}
             combinar_huecos()
             return True
@@ -156,18 +163,26 @@ tabla.configure(yscrollcommand=sb_y.set)
 sb_x = ctk.CTkScrollbar(app, orientation="horizontal", command=tabla.xview)
 tabla.configure(xscrollcommand=sb_x.set)
 
+def formato_tiempo(timedelta):
+    if timedelta is None or not hasattr(timedelta, 'total_seconds'):
+        return "00:00:00"
+    total_segundos = int(timedelta.total_seconds())
+    horas, resto = divmod(total_segundos, 3600)
+    minutos, segundos = divmod(resto, 60)
+    return f"{horas:02}:{minutos:02}:{segundos:02}"
+
 def actualizar_tabla():
     # Limpiar tabla
     for i in tabla.get_children():
         tabla.delete(i)
-    for proceso in procesos:
+    for proceso in procesos:        
         tabla.insert("", "end", values=(proceso.nombre, "Activo" if proceso.estado else "Inactivo",
-                                        proceso.tamano, proceso.tiempo_llegada, proceso.tiempo_finalizacion,
-                                        proceso.tiempo_atencion, proceso.tiempo_espera))
+                                        proceso.tamano, proceso.tiempo_llegada.strftime("%H:%M:%S"), proceso.tiempo_finalizacion.strftime("%H:%M:%S") if proceso.tiempo_finalizacion else "00:00:00",
+                                        formato_tiempo(proceso.tiempo_atencion), proceso.tiempo_espera))
     for proceso in procesos_espera:
         tabla.insert("", "end", values=(proceso.nombre, "En espera",
-                                        proceso.tamano, proceso.tiempo_llegada, proceso.tiempo_finalizacion,
-                                        proceso.tiempo_atencion, proceso.tiempo_espera))
+                                        proceso.tamano, proceso.tiempo_llegada.strftime("%H:%M:%S"), proceso.tiempo_finalizacion.strftime("%H:%M:%S") if proceso.tiempo_finalizacion else "00:00:00",
+                                        formato_tiempo(proceso.tiempo_atencion), proceso.tiempo_espera))
 
     # Limpiar representación gráfica
     for widget in Estado_Memoria.winfo_children():
