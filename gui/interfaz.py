@@ -24,7 +24,7 @@ def CrearProceso():
     # TODO: un ejemplo de como sale es: 2026 02 15 12 35 20 05 06, esto es año, mes, dia, hora, minuto, segundo, y probablemente milisegundos,
     # TODO: revisar si es posible mostrar solo la hora, o el formato de fecha deseado, o si es necesario cambiar el tipo de dato a string y mostrar la fecha en el formato deseado
         
-    tiempo_llegada = tm.localtime()
+    tiempo_llegada = tm.strftime("%H:%M:%S", tm.localtime())
     print(tiempo_llegada)
 
     proceso = prcs(nombrePrcs, True, tamProceso, 0, 0, tiempo_llegada, 0, 0, 0)
@@ -32,14 +32,21 @@ def CrearProceso():
     actualizar_tabla()
 
 def BorrarProceso():
-    BorrarDialog = ctk.CTkInputDialog(title="Borrar Proceso", text="Ingrese el nombre del proceso a borrar:")
+    BorrarDialog = ctk.CTkInputDialog(title="Salir Proceso", text="Ingrese el nombre del proceso:")
     nombrePrcs = BorrarDialog.get_input()
+
+    encontrado = False
+
     for proceso in procesos:
         if proceso.nombre == nombrePrcs:
-            procesos.remove(proceso)
+            proceso.estado = False  # Cambiar a inactivo
+            proceso.tiempo_finalizacion = tm.strftime("%H:%M:%S", tm.localtime())  # Registrar hora de salida
+            encontrado = True
             break
-        else:
-            print("Proceso no encontrado")
+
+    if not encontrado:
+        print("Proceso no encontrado")
+
     actualizar_tabla()
 
 app = ctk.CTk()
