@@ -27,3 +27,4 @@ class proceso:
         self.tiempo_atencion = tiempo_atencion
         self.tiempo_espera = tiempo_espera
         self.tiempo_espera_inicio = None  #NUEVO
+        
