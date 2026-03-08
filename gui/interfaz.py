@@ -1,8 +1,6 @@
-from datetime import datetime
 import customtkinter as ctk
 import tkinter as tk   # Canvas de Tkinter normal
 from tkinter.ttk import Treeview as TreeVw
-import time as tm
 import sys
 import os
 
@@ -11,33 +9,17 @@ import os
 # Agregar el directorio padre al path para poder importar desde src
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# importar la clase proceso de la carpeta src del archivo Proceso.py
-from src.Proceso import proceso as prcs
-
-# Lista de procesos y segmentos de memoria
-procesos: list[prcs] = []
-procesos_espera: list[prcs] = []  # Lista de procesos en espera
-segmentos = []  # cada segmento es {"proceso": objeto o None, "tamano": int}
-
-# Diccionario para guardar tiempos de espera (clave = nombre del proceso)
-tiempos_espera_inicio = {}
+# importar gestor de memoria y procesos
+from src.manejador_memoria import ManejadorMemoria
 
 # Valor máximo de la memoria
-MEMORIA_MAX = 1000
+MEMORIA_MAX = 100
+
+# Altura total para representar la memoria
+TAMANNO_REPRESENTACION = 520  
 
 
-def inicializar_memoria():
-    segmentos.clear()
-    segmentos.append({"proceso": None, "tamano": MEMORIA_MAX})
-
-
-# Función para calcular espacio ocupado
-def espacio_ocupado():
-    return sum(
-        int(seg["tamano"])
-        for seg in segmentos
-            if seg["proceso"] and seg["proceso"].estado
-    )
+manager = ManejadorMemoria(MEMORIA_MAX)
 
 
 def CrearProceso():
@@ -45,6 +27,8 @@ def CrearProceso():
         title="Crear Proceso", text="Ingrese el nombre del proceso:"
     )
     nombrePrcs = PrcssNmDialog.get_input()
+    if not nombrePrcs:
+        return
 
     PrcssTamDialog = ctk.CTkInputDialog(
         title="Crear Proceso", text="Ingrese el tamaño del proceso:"
@@ -52,61 +36,14 @@ def CrearProceso():
     tam_input = PrcssTamDialog.get_input()
     if tam_input is None:
         return
-    tamProceso = int(tam_input)
+    try:
+        tamProceso = int(tam_input)
+    except ValueError:
+        return
 
-    tiempo_llegada = datetime.now()
-
-    # print(tiempo_llegada) # Para verificar que se asigna correctamente el tiempo de llegada
-
-    proceso = prcs(nombrePrcs, True, tamProceso, 0, 0, tiempo_llegada, None, None, None)
-
-    if not insertar_proceso(proceso):
-        # No hay hueco suficiente, el proceso entra en espera
-        proceso.estado = False
-        tiempos_espera_inicio[proceso.nombre] = tm.time()
-        procesos_espera.append(proceso)
+    manager.crear_proceso(nombrePrcs, tamProceso)
 
     actualizar_tabla()
-
-
-""" 
-Función para combinar huecos contiguos en la memoria cuando salen dos o mas procesos adyacentes,
-evitando una fragmentacion que no debe de suceder en estos casos
-""" 
-def combinar_huecos():
-    i = 0
-    while i < len(segmentos) - 1:
-        if segmentos[i]["proceso"] is None and segmentos[i + 1]["proceso"] is None:
-            # unir huecos contiguos
-            segmentos[i]["tamano"] += segmentos[i + 1]["tamano"]
-            del segmentos[i + 1]
-        else:
-            i += 1
-
-
-def insertar_proceso(proceso):
-    combinar_huecos()
-    for i, seg in enumerate(segmentos):
-        if seg["proceso"] is None and seg["tamano"] >= proceso.tamano:
-            proceso.estado = True
-
-            # calcular tiempo de espera si aplica
-            espera_inicio = tiempos_espera_inicio.get(proceso.nombre)
-            if espera_inicio is not None:
-                proceso.tiempo_espera = round(tm.time() - espera_inicio, 2)
-                del tiempos_espera_inicio[proceso.nombre]
-            else:
-                proceso.tiempo_espera = 0
-
-            # ocupar parte del hueco
-            segmentos[i] = {"proceso": proceso, "tamano": proceso.tamano}
-            if seg["tamano"] > proceso.tamano:
-                segmentos.insert(
-                    i + 1, {"proceso": None, "tamano": seg["tamano"] - proceso.tamano}
-                )
-            procesos.append(proceso)
-            return True
-    return False
 
 
 def BorrarProceso():
@@ -114,53 +51,24 @@ def BorrarProceso():
         title="Salir Proceso", text="Ingrese el nombre del proceso:"
     )
     nombrePrcs = BorrarDialog.get_input()
+    if not nombrePrcs:
+        return
 
-    for proceso in procesos:
-        if proceso.nombre == nombrePrcs and proceso.estado:
-            proceso.tiempo_finalizacion = datetime.now()
-            proceso.tiempo_atencion = (
-                proceso.tiempo_finalizacion - proceso.tiempo_llegada
-            )
-
-        else:
-            print("Proceso no encontrado o no activo")
-
-    encontrado = eliminar_proceso(nombrePrcs)
-
-    if not encontrado:
-        print("Proceso no encontrado")
-
-    # Intentar meter procesos en espera si hay espacio
-    liberar_espacio()
+    manager.registrar_salida(nombrePrcs)
 
     actualizar_tabla()
 
 
-def eliminar_proceso(nombre):
-    for i, seg in enumerate(segmentos):
-        if seg["proceso"] and seg["proceso"].nombre == nombre and seg["proceso"].estado:
-            seg["proceso"].estado = False
-            # ↓ quita la línea de tiempo_finalizacion, ya se asignó en BorrarProceso
-            segmentos[i] = {"proceso": None, "tamano": seg["tamano"]}
-            combinar_huecos()
-            return True
-    return False
-
-
-def liberar_espacio():
-    for p in procesos_espera[:]:
-        if insertar_proceso(p):
-            procesos_espera.remove(p)
-
-
 app = ctk.CTk()
 app.title("Simulador de gestion de memoria")
-app.geometry("1000x700")
+app.geometry("1200x680")
 
-rdBtnFF = ctk.CTkRadioButton(app, text="First Fit")
+checkvarFF = ctk.StringVar(value="off")
+rdBtnFF = ctk.CTkRadioButton(app, text="First Fit", variable=checkvarFF)
 rdBtnFF.grid(row=0, column=0, padx=20, pady=20)
 
-rdBtnBF = ctk.CTkRadioButton(app, text="Best Fit")
+checkvarBF = ctk.StringVar(value="off")
+rdBtnBF = ctk.CTkRadioButton(app, text="Best Fit", variable=checkvarBF)
 rdBtnBF.grid(row=0, column=1, padx=20, pady=20)
 
 BtnCrear = ctk.CTkButton(app, text="Llegada", command=CrearProceso)
@@ -172,7 +80,7 @@ BtnBorrar.grid(row=1, column=1, padx=20, pady=20)
 Estado_Memoria = ctk.CTkFrame(
     app,
     width=120,
-    height=550,
+    height=TAMANNO_REPRESENTACION,
     border_width=1,
     border_color="black",
     fg_color="#c3d4e7",
@@ -204,10 +112,10 @@ sb_x = ctk.CTkScrollbar(app, orientation="horizontal", command=tabla.xview)
 tabla.configure(xscrollcommand=sb_x.set)
 
 
-def formato_tiempo(timedelta):
-    if timedelta is None or not hasattr(timedelta, "total_seconds"):
+def formato_tiempo(delta):
+    if delta is None or not hasattr(delta, "total_seconds"):
         return "00:00:00"
-    total_segundos = int(timedelta.total_seconds())
+    total_segundos = int(delta.total_seconds())
     horas, resto = divmod(total_segundos, 3600)
     minutos, segundos = divmod(resto, 60)
     return f"{horas:02}:{minutos:02}:{segundos:02}"
@@ -217,7 +125,8 @@ def actualizar_tabla():
     # Limpiar tabla
     for i in tabla.get_children():
         tabla.delete(i)
-    for proceso in procesos:
+
+    for proceso in manager.procesos:
         tabla.insert("", "end", values=(
                 proceso.nombre, "Activo" if proceso.estado else "Inactivo", proceso.tamano, proceso.tiempo_llegada.strftime("%H:%M:%S"),
                 (
@@ -228,7 +137,8 @@ def actualizar_tabla():
                 formato_tiempo(proceso.tiempo_atencion), proceso.tiempo_espera,
             ),
         )
-    for proceso in procesos_espera:
+        
+    for proceso in manager.procesos_espera:
         tabla.insert("", "end", values=(
                 proceso.nombre, "En espera", proceso.tamano, proceso.tiempo_llegada.strftime("%H:%M:%S"),
                 (
@@ -246,15 +156,15 @@ def actualizar_tabla():
 
     # Canvas de Tkinter normal
     canvas = tk.Canvas(
-        Estado_Memoria, width=120, height=550, bg="#c3d4e7", highlightthickness=0
+        Estado_Memoria, width=120, height=TAMANNO_REPRESENTACION, bg="#c3d4e7", highlightthickness=0
     )
     canvas.pack()
 
-    total_altura = 550
-    unidad_altura = total_altura / MEMORIA_MAX
+    total_altura = TAMANNO_REPRESENTACION
+    unidad_altura = total_altura / manager.memoria_max
 
     y: float = 0
-    for seg in segmentos:
+    for seg in manager.segmentos:
         altura = int(seg["tamano"]) * unidad_altura
         if seg["proceso"]:
             color = "#4a90e2" if seg["proceso"].estado else "#999999"
@@ -272,7 +182,6 @@ def actualizar_tabla():
 
 tabla.grid(padx=150, pady=80, row=1, column=1)
 
-# Inicializar memoria con un hueco total
-inicializar_memoria()
+actualizar_tabla()
 
 app.mainloop()

@@ -6,8 +6,7 @@ class proceso:
     nombre: str
     estado: bool
     tamano: int  
-
-    # TODO: Revisar que el tipo de dato date sea correcto, y si es necesario importar alguna libreria para manejar fechas
+    
     tiempo_llegada: datetime
     tiempo_finalizacion: datetime
     tiempo_atencion: timedelta
