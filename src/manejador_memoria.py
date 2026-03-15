@@ -50,7 +50,7 @@ class ManejadorMemoria:
                 if seg["tamano"] > proceso.tamano:
                     self.segmentos.insert(
                         i + 1,
-                        {"proceso": None, "tamano": seg["tamano"] - proceso.tamano},
+                        {"proceso": None, "tamano": (seg["tamano"] - proceso.tamano)},
                     )
                 self.procesos.append(proceso)
                 return True
@@ -79,21 +79,26 @@ class ManejadorMemoria:
             else:
                 proceso.tiempo_espera = 0
 
+            tamano_hueco_original = self.segmentos[mejor_indice]["tamano"]
             self.segmentos[mejor_indice] = {"proceso": proceso, "tamano": proceso.tamano}
-            if self.segmentos[mejor_indice]["tamano"] > proceso.tamano:
+            if tamano_hueco_original > proceso.tamano:
                 self.segmentos.insert(
                     mejor_indice + 1,
-                    {"proceso": None, "tamano": self.segmentos[mejor_indice]["tamano"] - proceso.tamano},
+                    {"proceso": None, "tamano": (tamano_hueco_original - proceso.tamano)},
                 )
             self.procesos.append(proceso)
             return True
         return False
 
-    def crear_proceso(self, nombre: str, tamano: int):
+    def crear_proceso(self, nombre: str, tamano: int, checkvar: str):
         proceso = prcs(nombre, True, tamano, 0, 0, datetime.now(), None, 0, None)
-        insertado = self.insertar_proceso_FF(proceso)
+        insertado=False        
+        if checkvar == "FF":
+            insertado = self.insertar_proceso_FF(proceso)
+        elif checkvar == "BF":
+            insertado = self.insertar_proceso_BF(proceso)
 
-        if not insertado:
+        elif not insertado:
             proceso.estado = False
             self.tiempos_espera_inicio[proceso.nombre] = tm.time()
             self.procesos_espera.append(proceso)

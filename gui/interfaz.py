@@ -22,7 +22,7 @@ TAMANNO_REPRESENTACION = 520
 manager = ManejadorMemoria(MEMORIA_MAX)
 
 
-def CrearProceso():
+def CrearProceso(checkvar):
     PrcssNmDialog = ctk.CTkInputDialog(
         title="Crear Proceso", text="Ingrese el nombre del proceso:"
     )
@@ -41,7 +41,7 @@ def CrearProceso():
     except ValueError:
         return
 
-    manager.crear_proceso(nombrePrcs, tamProceso)
+    manager.crear_proceso(nombrePrcs, tamProceso, checkvar)
 
     actualizar_tabla()
 
@@ -63,18 +63,20 @@ app = ctk.CTk()
 app.title("Simulador de gestion de memoria")
 app.geometry("1200x680")
 
-checkvarFF = ctk.StringVar(value="off")
-rdBtnFF = ctk.CTkRadioButton(app, text="First Fit", variable=checkvarFF)
+checkvar = ctk.StringVar(value="FF")
+
+rdBtnFF = ctk.CTkRadioButton(app, text="First Fit", variable=checkvar, value="FF")
 rdBtnFF.grid(row=0, column=0, padx=20, pady=20)
 
-checkvarBF = ctk.StringVar(value="off")
-rdBtnBF = ctk.CTkRadioButton(app, text="Best Fit", variable=checkvarBF)
+rdBtnBF = ctk.CTkRadioButton(app, text="Best Fit", variable=checkvar, value="BF")
 rdBtnBF.grid(row=0, column=1, padx=20, pady=20)
 
-BtnCrear = ctk.CTkButton(app, text="Llegada", command=CrearProceso)
+
+
+BtnCrear = ctk.CTkButton(app, text="Llegada", command=(lambda: CrearProceso(checkvar.get())))
 BtnCrear.grid(row=1, column=0, padx=20, pady=20)
 
-BtnBorrar = ctk.CTkButton(app, text="Salir", command=BorrarProceso)
+BtnBorrar = ctk.CTkButton(app, text="Salir", command=(lambda: BorrarProceso()))
 BtnBorrar.grid(row=1, column=1, padx=20, pady=20)
 
 Estado_Memoria = ctk.CTkFrame(
@@ -105,11 +107,6 @@ tabla.column(4, width=120)
 tabla.column(5, width=120)
 tabla.column(6, width=120)
 tabla.column(7, width=120)
-
-sb_y = ctk.CTkScrollbar(app, orientation="vertical", command=tabla.yview)
-tabla.configure(yscrollcommand=sb_y.set)
-sb_x = ctk.CTkScrollbar(app, orientation="horizontal", command=tabla.xview)
-tabla.configure(xscrollcommand=sb_x.set)
 
 
 def formato_tiempo(delta):
