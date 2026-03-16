@@ -11,7 +11,8 @@ class proceso:
     tiempo_finalizacion: datetime
     tiempo_atencion: timedelta
     tiempo_espera: float
-    tiempo_espera_inicio: None  #NUEVO
+    tiempo_espera_inicio: None
+    color: str 
 
     def __init__(self, nombre, estado, tamano, prioridad, tiempo_ejecucion,
                  tiempo_llegada, tiempo_finalizacion, tiempo_espera, tiempo_atencion):
@@ -24,4 +25,5 @@ class proceso:
         self.tiempo_finalizacion = tiempo_finalizacion
         self.tiempo_atencion = tiempo_atencion
         self.tiempo_espera = tiempo_espera
-        self.tiempo_espera_inicio = None  #NUEVO
+        self.tiempo_espera_inicio = None
+        self.color = None  

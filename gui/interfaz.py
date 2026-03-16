@@ -1,38 +1,29 @@
-import customtkinter as ctk
-import tkinter as tk   # Canvas de Tkinter normal
-from tkinter.ttk import Treeview as TreeVw
-import sys
 import os
-
-# TODO: Dejar de usar grid como sistema de posicionamiento y usar otro, que sea dificil que tenga problemas de posicionamiento,  con el fin de no tener la interfaz como una tabla, y aparezcan botones o algun otro objeto en lugares no tan deseados
+import sys
+import tkinter as tk
+import customtkinter as ctk
+from tkinter.ttk import Treeview as TreeVw
+from datetime import datetime
 
 # Agregar el directorio padre al path para poder importar desde src
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# importar gestor de memoria y procesos
 from src.manejador_memoria import ManejadorMemoria
 
 # Valor máximo de la memoria
 MEMORIA_MAX = 100
-
 # Altura total para representar la memoria
 TAMANNO_REPRESENTACION = 520  
 
-
 manager = ManejadorMemoria(MEMORIA_MAX)
 
-
 def CrearProceso(checkvar):
-    PrcssNmDialog = ctk.CTkInputDialog(
-        title="Crear Proceso", text="Ingrese el nombre del proceso:"
-    )
+    PrcssNmDialog = ctk.CTkInputDialog(title="Crear Proceso", text="Ingrese el nombre del proceso:")
     nombrePrcs = PrcssNmDialog.get_input()
     if not nombrePrcs:
         return
 
-    PrcssTamDialog = ctk.CTkInputDialog(
-        title="Crear Proceso", text="Ingrese el tamaño del proceso:"
-    )
+    PrcssTamDialog = ctk.CTkInputDialog(title="Crear Proceso", text="Ingrese el tamaño del proceso:")
     tam_input = PrcssTamDialog.get_input()
     if tam_input is None:
         return
@@ -42,25 +33,19 @@ def CrearProceso(checkvar):
         return
 
     manager.crear_proceso(nombrePrcs, tamProceso, checkvar)
-
     actualizar_tabla()
 
-
 def BorrarProceso():
-    BorrarDialog = ctk.CTkInputDialog(
-        title="Salir Proceso", text="Ingrese el nombre del proceso:"
-    )
+    BorrarDialog = ctk.CTkInputDialog(title="Salir Proceso", text="Ingrese el nombre del proceso:")
     nombrePrcs = BorrarDialog.get_input()
     if not nombrePrcs:
         return
 
     manager.registrar_salida(nombrePrcs)
-
     actualizar_tabla()
 
-
 app = ctk.CTk()
-app.title("Simulador de gestion de memoria")
+app.title("Simulador de gestión de memoria")
 app.geometry("1200x680")
 
 checkvar = ctk.StringVar(value="FF")
@@ -70,8 +55,6 @@ rdBtnFF.grid(row=0, column=0, padx=20, pady=20)
 
 rdBtnBF = ctk.CTkRadioButton(app, text="Best Fit", variable=checkvar, value="BF")
 rdBtnBF.grid(row=0, column=1, padx=20, pady=20)
-
-
 
 BtnCrear = ctk.CTkButton(app, text="Llegada", command=(lambda: CrearProceso(checkvar.get())))
 BtnCrear.grid(row=1, column=0, padx=20, pady=20)
@@ -91,7 +74,7 @@ Estado_Memoria = ctk.CTkFrame(
 Estado_Memoria.grid(row=2, column=0, padx=20, pady=20, rowspan=2)
 
 tabla = TreeVw(app, columns=(1, 2, 3, 4, 5, 6, 7), show="headings", height=12)
-tabla.grid(row=2, column=4, padx=20, pady=20, rowspan=2)  # Ajustar posición y tamaño de la tabla
+tabla.grid(row=2, column=4, padx=20, pady=20, rowspan=2)
 tabla.heading(1, text="Nombre")
 tabla.heading(2, text="Estado")
 tabla.heading(3, text="Tamaño")
@@ -108,7 +91,6 @@ tabla.column(5, width=120)
 tabla.column(6, width=120)
 tabla.column(7, width=120)
 
-
 def formato_tiempo(delta):
     if delta is None or not hasattr(delta, "total_seconds"):
         return "00:00:00"
@@ -116,7 +98,6 @@ def formato_tiempo(delta):
     horas, resto = divmod(total_segundos, 3600)
     minutos, segundos = divmod(resto, 60)
     return f"{horas:02}:{minutos:02}:{segundos:02}"
-
 
 def actualizar_tabla():
     # Limpiar tabla
@@ -151,7 +132,6 @@ def actualizar_tabla():
     for widget in Estado_Memoria.winfo_children():
         widget.destroy()
 
-    # Canvas de Tkinter normal
     canvas = tk.Canvas(
         Estado_Memoria, width=120, height=TAMANNO_REPRESENTACION, bg="#c3d4e7", highlightthickness=0
     )
@@ -164,21 +144,14 @@ def actualizar_tabla():
     for seg in manager.segmentos:
         altura = int(seg["tamano"]) * unidad_altura
         if seg["proceso"]:
-            color = "#4a90e2" if seg["proceso"].estado else "#999999"
+            # El color aleatorio es asignado al proceso
+            color = seg["proceso"].color if seg["proceso"].estado else "#999999"
             canvas.create_rectangle(0, y, 120, y + altura, fill=color, outline="black")
-            canvas.create_text(
-                60, y + altura / 2, text=f"{seg['proceso'].nombre} ({seg['tamano']})"
-            )
+            canvas.create_text(60, y + altura / 2, text=f"{seg['proceso'].nombre} ({seg['tamano']})")
         else:
-            canvas.create_rectangle(
-                0, y, 120, y + altura, fill="#d9d9d9", outline="black"
-            )
+            canvas.create_rectangle(0, y, 120, y + altura, fill="#d9d9d9", outline="black")
             canvas.create_text(60, y + altura / 2, text=f"Hueco ({seg['tamano']})")
         y += altura
 
-
-tabla.grid(padx=150, pady=80, row=1, column=1)
-
 actualizar_tabla()
-
 app.mainloop()
