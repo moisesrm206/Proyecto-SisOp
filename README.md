@@ -23,10 +23,11 @@ Este es un proyecto de equipo desarrollado en conjunto. Si eres parte del equipo
 
 ```
 src/
-  main.py          - Punto de entrada principal
-  Proceso.py       - Clase para gestión de procesos
+   main.py           - Punto de entrada principal
+   Proceso.py        - Clase para gestión de procesos
+   memory_manager.py - Lógica de asignación/liberación de memoria
 gui/
-  interfaz.py      - Interfaz gráfica del simulador
+   interfaz.py       - Interfaz gráfica del simulador
 ```
 
 ### Antes de Comenzar
