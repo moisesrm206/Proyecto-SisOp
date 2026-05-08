@@ -108,7 +108,7 @@ def actualizar_tabla():
  # Agregar procesos activos y en espera a la tabla
     for proceso in manager.procesos:
         tabla.insert("", "end", values=(
-                proceso.nombre, "Activo" if proceso.estado else "Inactivo", proceso.tamano, proceso.tiempo_llegada.strftime("%H:%M:%S"), proceso.tiempo_ejecucion,
+                proceso.nombre, "Activo" if proceso.estado else "Inactivo", proceso.tamano, proceso.tiempo_llegada.strftime("%H:%M:%S"), proceso.tiempo_ejecucion.strftime("%H:%M:%S") if proceso.tiempo_ejecucion else "00:00:00",
                 (
                     proceso.tiempo_finalizacion.strftime("%H:%M:%S")
                     if proceso.tiempo_finalizacion
@@ -120,7 +120,7 @@ def actualizar_tabla():
         
     for proceso in manager.procesos_espera:
         tabla.insert("", "end", values=(
-                proceso.nombre, "En espera", proceso.tamano, proceso.tiempo_llegada.strftime("%H:%M:%S"), proceso.tiempo_ejecucion,
+                proceso.nombre, "En espera", proceso.tamano, proceso.tiempo_llegada.strftime("%H:%M:%S"), proceso.tiempo_ejecucion.strftime("%H:%M:%S") if proceso.tiempo_ejecucion else "00:00:00",
                 (
                     proceso.tiempo_finalizacion.strftime("%H:%M:%S")
                     if proceso.tiempo_finalizacion
