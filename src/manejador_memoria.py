@@ -89,6 +89,8 @@ class ManejadorMemoria:
             proceso.estado = False
             self.tiempos_espera_inicio[proceso.nombre] = tm.time()
             self.procesos_espera.append(proceso)
+        else:
+            proceso.tiempo_ejecucion = datetime.now()
 
         return proceso, insertado
 
@@ -105,6 +107,7 @@ class ManejadorMemoria:
         for proceso in self.procesos_espera[:]:
             if self.insertar_proceso_FF(proceso):
                 self.procesos_espera.remove(proceso)
+            proceso.tiempo_ejecucion = datetime.now()
 
     def registrar_salida(self, nombre: str):
         for proceso in self.procesos:

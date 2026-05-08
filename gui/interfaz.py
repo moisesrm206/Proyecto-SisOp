@@ -73,15 +73,16 @@ Estado_Memoria = ctk.CTkFrame(
 )
 Estado_Memoria.grid(row=2, column=0, padx=20, pady=20, rowspan=2)
 
-tabla = TreeVw(app, columns=(1, 2, 3, 4, 5, 6, 7), show="headings", height=12)
+tabla = TreeVw(app, columns=(1, 2, 3, 4, 5, 6, 7, 8), show="headings", height=12)
 tabla.grid(row=2, column=4, padx=20, pady=20, rowspan=2)
 tabla.heading(1, text="Nombre")
 tabla.heading(2, text="Estado")
 tabla.heading(3, text="Tamaño")
 tabla.heading(4, text="Llegada")
-tabla.heading(5, text="Finalización")
-tabla.heading(6, text="Tiempo de atención")
-tabla.heading(7, text="Tiempo de espera")
+tabla.heading(5, text="Hora Atención")
+tabla.heading(6, text="Finalización")
+tabla.heading(7, text="Tiempo de atención")
+tabla.heading(8, text="Tiempo de espera")
 
 tabla.column(1, width=60)
 tabla.column(2, width=50)
@@ -90,6 +91,7 @@ tabla.column(4, width=120)
 tabla.column(5, width=120)
 tabla.column(6, width=120)
 tabla.column(7, width=120)
+tabla.column(8, width=120)
 
 def formato_tiempo(delta):
     if delta is None or not hasattr(delta, "total_seconds"):
@@ -103,10 +105,10 @@ def actualizar_tabla():
     # Limpiar tabla
     for i in tabla.get_children():
         tabla.delete(i)
-
+ # Agregar procesos activos y en espera a la tabla
     for proceso in manager.procesos:
         tabla.insert("", "end", values=(
-                proceso.nombre, "Activo" if proceso.estado else "Inactivo", proceso.tamano, proceso.tiempo_llegada.strftime("%H:%M:%S"),
+                proceso.nombre, "Activo" if proceso.estado else "Inactivo", proceso.tamano, proceso.tiempo_llegada.strftime("%H:%M:%S"), proceso.tiempo_ejecucion,
                 (
                     proceso.tiempo_finalizacion.strftime("%H:%M:%S")
                     if proceso.tiempo_finalizacion
@@ -118,7 +120,7 @@ def actualizar_tabla():
         
     for proceso in manager.procesos_espera:
         tabla.insert("", "end", values=(
-                proceso.nombre, "En espera", proceso.tamano, proceso.tiempo_llegada.strftime("%H:%M:%S"),
+                proceso.nombre, "En espera", proceso.tamano, proceso.tiempo_llegada.strftime("%H:%M:%S"), proceso.tiempo_ejecucion,
                 (
                     proceso.tiempo_finalizacion.strftime("%H:%M:%S")
                     if proceso.tiempo_finalizacion
@@ -132,6 +134,7 @@ def actualizar_tabla():
     for widget in Estado_Memoria.winfo_children():
         widget.destroy()
 
+# Dibujar representación gráfica de la memoria
     canvas = tk.Canvas(
         Estado_Memoria, width=120, height=TAMANNO_REPRESENTACION, bg="#c3d4e7", highlightthickness=0
     )
@@ -140,6 +143,7 @@ def actualizar_tabla():
     total_altura = TAMANNO_REPRESENTACION
     unidad_altura = total_altura / manager.memoria_max
 
+# Dibujar segmentos de memoria (en este momento se puede tomar el valor de tiempo de ejecucion / hora de atnecion), para poder guardarlo y mostrarlo en la tabla
     y: float = 0
     for seg in manager.segmentos:
         altura = int(seg["tamano"]) * unidad_altura
